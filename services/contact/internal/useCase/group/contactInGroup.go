@@ -11,7 +11,6 @@ func (uc *UseCase) CreateContactIntoGroup(groupID uuid.UUID, contacts ...*contac
 }
 
 func (uc *UseCase) AddContactToGroup(groupID, contactID uuid.UUID) error {
-	// TODO implement me
 	panic("implement me")
 }
 

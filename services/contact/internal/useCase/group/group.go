@@ -11,7 +11,6 @@ func (uc *UseCase) Create(groupCreate *group.Group) (*group.Group, error) {
 	panic("implement me")
 }
 func (uc *UseCase) Update(groupUpdate *group.Group) (*group.Group, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
