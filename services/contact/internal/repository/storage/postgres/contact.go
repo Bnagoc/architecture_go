@@ -30,7 +30,9 @@ var mappingSortContact = map[columnCode.ColumnCode]string{
 }
 
 func (r *Repository) CreateContact(contacts ...*contact.Contact) ([]*contact.Contact, error) {
+
 	var ctx = context.Background()
+
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -66,6 +68,7 @@ func (r *Repository) createContactTx(ctx context.Context, tx pgx.Tx, contacts ..
 }
 
 func (r *Repository) UpdateContact(ID uuid.UUID, updateFn func(c *contact.Contact) (*contact.Contact, error)) (*contact.Contact, error) {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -138,6 +141,7 @@ func (r *Repository) updateContactTx(ctx context.Context, tx pgx.Tx, in *contact
 }
 
 func (r *Repository) DeleteContact(ID uuid.UUID) error {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -185,6 +189,7 @@ func (r *Repository) deleteContactTx(ctx context.Context, tx pgx.Tx, ID uuid.UUI
 }
 
 func (r *Repository) ListContact(parameter queryParameter.QueryParameter) ([]*contact.Contact, error) {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -256,6 +261,7 @@ func (r *Repository) listContactTx(ctx context.Context, tx pgx.Tx, parameter que
 }
 
 func (r *Repository) ReadContactByID(ID uuid.UUID) (response *contact.Contact, err error) {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -314,6 +320,7 @@ func (r *Repository) oneContactTx(ctx context.Context, tx pgx.Tx, ID uuid.UUID) 
 }
 
 func (r *Repository) CountContact() (uint64, error) {
+
 	var builder = r.genSQL.Select(
 		"COUNT(id)",
 	).From("slurm.contact")
@@ -325,7 +332,9 @@ func (r *Repository) CountContact() (uint64, error) {
 		return 0, err
 	}
 
-	var row = r.db.QueryRow(context.Background(), query, args...)
+	var ctx = context.Background()
+
+	var row = r.db.QueryRow(ctx, query, args...)
 	var total uint64
 
 	if err = row.Scan(&total); err != nil {

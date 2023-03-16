@@ -20,12 +20,14 @@ import (
 )
 
 var mappingSortGroup = map[columnCode.ColumnCode]string{
-	"id":          "id",
-	"name":        "name",
-	"description": "description",
+	"id":           "id",
+	"name":         "name",
+	"description":  "description",
+	"contactCount": "contact_count",
 }
 
 func (r *Repository) CreateGroup(group *group.Group) (*group.Group, error) {
+
 	query, args, err := r.genSQL.Insert("slurm.group").
 		Columns(
 			"id",

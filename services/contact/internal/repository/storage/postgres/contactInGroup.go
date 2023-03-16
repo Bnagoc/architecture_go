@@ -14,6 +14,7 @@ import (
 )
 
 func (r *Repository) CreateContactIntoGroup(groupID uuid.UUID, contacts ...*contact.Contact) ([]*contact.Contact, error) {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -41,6 +42,7 @@ func (r *Repository) CreateContactIntoGroup(groupID uuid.UUID, contacts ...*cont
 }
 
 func (r *Repository) DeleteContactFromGroup(groupID, contactID uuid.UUID) error {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)
@@ -72,6 +74,7 @@ func (r *Repository) DeleteContactFromGroup(groupID, contactID uuid.UUID) error 
 }
 
 func (r *Repository) AddContactsToGroup(groupID uuid.UUID, contactIDs ...uuid.UUID) error {
+
 	var ctx = context.Background()
 
 	tx, err := r.db.Begin(ctx)

@@ -42,7 +42,7 @@ func initDefaultEnv() error {
 		}
 	}
 	if len(os.Getenv("PGPORT")) == 0 {
-		if err := os.Setenv("PGPORT", "5432"); err != nil {
+		if err := os.Setenv("PGPORT", "5838"); err != nil {
 			return errors.WithStack(err)
 		}
 	}
