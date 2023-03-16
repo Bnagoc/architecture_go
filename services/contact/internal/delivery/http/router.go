@@ -28,6 +28,8 @@ func (d *Delivery) initRouter() *gin.Engine {
 
 	var router = gin.New()
 
+	router.Use(Tracer())
+
 	// Logs all panic to error log
 	//   - stack means whether output the stack info.
 	router.Use(ginzap.RecoveryWithZap(logger.GetLogger(), true))

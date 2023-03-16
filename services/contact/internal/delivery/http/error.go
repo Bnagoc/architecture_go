@@ -3,6 +3,8 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
 	"go.uber.org/zap"
 
 	"architecture_go/pkg/type/logger"
@@ -29,7 +31,7 @@ func SetError(c *gin.Context, statusCode int, errs ...error) {
 
 		if len(errs) > 1 {
 			for _, err := range errs {
-				response.Errors = append(response.Errors, err.Error())
+				response.Errors = append(response.Errors, c.Error(err).Error())
 			}
 		}
 	}
@@ -44,11 +46,19 @@ func SetError(c *gin.Context, statusCode int, errs ...error) {
 }
 
 func getContextFields(c *gin.Context) []zap.Field {
-	return []zap.Field{zap.Int("status", c.Writer.Status()),
+	var fields = []zap.Field{zap.Int("status", c.Writer.Status()),
 		zap.String("method", c.Request.Method),
 		zap.String("path", c.Request.URL.Path),
 		zap.String("query", c.Request.URL.RawQuery),
 		zap.String("ip", c.ClientIP()),
 		zap.String("user-agent", c.Request.UserAgent()),
 	}
+
+	if span := opentracing.SpanFromContext(c.Request.Context()); span != nil {
+		if jaegerSpan, ok := span.Context().(jaeger.SpanContext); ok {
+			fields = append(fields, zap.Stringer("traceID", jaegerSpan.TraceID()))
+		}
+	}
+
+	return fields
 }

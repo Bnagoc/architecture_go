@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/opentracing/opentracing-go"
 
 	"architecture_go/pkg/type/context"
 	"architecture_go/pkg/type/queryParameter"
@@ -35,14 +36,22 @@ func (uc *UseCase) Delete(ctx context.Context, ID uuid.UUID) error {
 	return uc.adapterStorage.DeleteContact(ctx, ID)
 }
 
-func (uc *UseCase) List(ctx context.Context, parameter queryParameter.QueryParameter) ([]*contact.Contact, error) {
-	return uc.adapterStorage.ListContact(ctx, parameter)
+func (uc *UseCase) List(c context.Context, parameter queryParameter.QueryParameter) ([]*contact.Contact, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(c, "List")
+	defer span.Finish()
+
+	return uc.adapterStorage.ListContact(context.New(ctx), parameter)
 }
 
 func (uc *UseCase) ReadByID(ctx context.Context, ID uuid.UUID) (response *contact.Contact, err error) {
+
 	return uc.adapterStorage.ReadContactByID(ctx, ID)
 }
 
-func (uc *UseCase) Count(ctx context.Context) (uint64, error) {
-	return uc.adapterStorage.CountContact(ctx)
+func (uc *UseCase) Count(c context.Context) (uint64, error) {
+	span, ctx := opentracing.StartSpanFromContext(c, "Count")
+	defer span.Finish()
+
+	return uc.adapterStorage.CountContact(context.New(ctx))
 }

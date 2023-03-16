@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"architecture_go/pkg/tools/converter"
 	"architecture_go/pkg/type/context"
+	"architecture_go/pkg/type/logger"
 	"architecture_go/pkg/type/pagination"
 	"architecture_go/pkg/type/phoneNumber"
 	"architecture_go/pkg/type/query"
@@ -99,7 +101,7 @@ func (d *Delivery) CreateContact(c *gin.Context) {
 		SetError(c, http.StatusInternalServerError, err)
 		return
 	}
-
+	logger.InfoWithContext(ctx, "test log", zap.Any("Test", "Test"))
 	if len(response) > 0 {
 		c.JSON(http.StatusCreated, jsonContact.ToContactResponse(response[0]))
 	} else {
@@ -233,7 +235,6 @@ func (d *Delivery) DeleteContact(c *gin.Context) {
 func (d *Delivery) ListContact(c *gin.Context) {
 
 	var ctx = context.New(c)
-
 	params, err := query.ParseQuery(c, query.Options{
 		Sorts: mappingSortsContact,
 	})

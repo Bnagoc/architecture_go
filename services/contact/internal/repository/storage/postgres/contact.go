@@ -7,6 +7,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
+	"github.com/opentracing/opentracing-go"
 
 	"architecture_go/pkg/tools/transaction"
 	"architecture_go/pkg/type/columnCode"
@@ -197,6 +198,10 @@ func (r *Repository) ListContact(c context.Context, parameter queryParameter.Que
 	ctx := c.CopyWithTimeout(r.options.Timeout)
 	defer ctx.Cancel()
 
+	span, tmp := opentracing.StartSpanFromContext(c, "ListContact")
+	defer span.Finish()
+	ctx = context.New(tmp)
+
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, log.ErrorWithContext(ctx, err)
@@ -325,7 +330,11 @@ func (r *Repository) oneContactTx(ctx context.Context, tx pgx.Tx, ID uuid.UUID) 
 	return r.toDomainContact(daoContact[0])
 }
 
-func (r *Repository) CountContact(ctx context.Context) (uint64, error) {
+func (r *Repository) CountContact(c context.Context) (uint64, error) {
+
+	span, tmp := opentracing.StartSpanFromContext(c, "CountContact")
+	defer span.Finish()
+	ctx := context.New(tmp)
 
 	var builder = r.genSQL.Select(
 		"COUNT(id)",

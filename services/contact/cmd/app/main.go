@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/viper"
 
 	"architecture_go/pkg/store/postgres"
+	"architecture_go/pkg/tracing"
+	"architecture_go/pkg/type/context"
+	log "architecture_go/pkg/type/logger"
 	deliveryGrpc "architecture_go/services/contact/internal/delivery/grpc"
 	deliveryHttp "architecture_go/services/contact/internal/delivery/http"
 	// repositoryContact "architecture_go/services/contact/internal/repository/contact/postgres"
@@ -18,12 +21,30 @@ import (
 	useCaseGroup "architecture_go/services/contact/internal/useCase/group"
 )
 
+func init() {
+	viper.SetConfigName(".env")
+	viper.SetConfigType("dotenv")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetDefault("SERVICE_NAME", "contactService")
+}
+
 func main() {
 	conn, err := postgres.New(postgres.Settings{})
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Pool.Close()
+
+	closer, err := tracing.New(context.Empty())
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err = closer.Close(); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	// repoContact, err:= repositoryContact.New(conn.Pool, repositoryContact.Options{})
 	// if err != nil {
