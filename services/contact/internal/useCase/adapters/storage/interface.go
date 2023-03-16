@@ -43,7 +43,7 @@ type GroupReader interface {
 }
 
 type ContactInGroup interface {
-	CreateContactIntoGroup(groupID uuid.UUID, in ...*contact.Contact) ([]*contact.Contact, error)
+	CreateContactIntoGroup(groupID uuid.UUID, contacts ...*contact.Contact) ([]*contact.Contact, error)
 	DeleteContactFromGroup(groupID, contactID uuid.UUID) error
 	AddContactsToGroup(groupID uuid.UUID, contactIDs ...uuid.UUID) error
 }

@@ -11,6 +11,8 @@ import (
 	"architecture_go/pkg/store/postgres"
 	deliveryGrpc "architecture_go/services/contact/internal/delivery/grpc"
 	deliveryHttp "architecture_go/services/contact/internal/delivery/http"
+	// repositoryContact "architecture_go/services/contact/internal/repository/contact/postgres"
+	// repositoryGroup "architecture_go/services/contact/internal/repository/group/postgres"
 	repositoryStorage "architecture_go/services/contact/internal/repository/storage/postgres"
 	useCaseContact "architecture_go/services/contact/internal/useCase/contact"
 	useCaseGroup "architecture_go/services/contact/internal/useCase/group"
@@ -23,9 +25,22 @@ func main() {
 	}
 	defer conn.Pool.Close()
 
+	// repoContact, err:= repositoryContact.New(conn.Pool, repositoryContact.Options{})
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// repoGroup, err:= repositoryGroup.New(conn.Pool, repoContact, repositoryGroup.Options{})
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	repoStorage, err := repositoryStorage.New(conn.Pool, repositoryStorage.Options{})
+	if err != nil {
+		panic(err)
+	}
 	var (
-		repoStorage  = repositoryStorage.New(conn.Pool, repositoryStorage.Options{})
-		ucContact    = useCaseContact.New(repoStorage, useCaseContact.Options{})
+		ucContact = useCaseContact.New(repoStorage, useCaseContact.Options{})
+		// ucGroup      = useCaseGroup.New(repoGroup, useCaseGroup.Options{})
 		ucGroup      = useCaseGroup.New(repoStorage, useCaseGroup.Options{})
 		_            = deliveryGrpc.New(ucContact, ucGroup, deliveryGrpc.Options{})
 		listenerHttp = deliveryHttp.New(ucContact, ucGroup, deliveryHttp.Options{})
