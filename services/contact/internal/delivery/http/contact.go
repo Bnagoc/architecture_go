@@ -1,7 +1,7 @@
 package http
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"time"
 
@@ -19,6 +19,7 @@ import (
 	"architecture_go/services/contact/internal/domain/contact/name"
 	"architecture_go/services/contact/internal/domain/contact/patronymic"
 	"architecture_go/services/contact/internal/domain/contact/surname"
+	"architecture_go/services/contact/internal/useCase"
 )
 
 var mappingSortsContact = query.SortsOptions{
@@ -50,7 +51,7 @@ func (d *Delivery) CreateContact(c *gin.Context) {
 
 	contact := jsonContact.ShortContact{}
 	if err := c.ShouldBindJSON(&contact); err != nil {
-		SetError(c, http.StatusBadRequest, fmt.Errorf("payload is not correct, Error: %w", err))
+		SetError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -94,6 +95,7 @@ func (d *Delivery) CreateContact(c *gin.Context) {
 
 	response, err := d.ucContact.Create(ctx, dContact)
 	if err != nil {
+
 		SetError(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -173,6 +175,11 @@ func (d *Delivery) UpdateContact(c *gin.Context) {
 
 	response, err := d.ucContact.Update(ctx, *dContact)
 	if err != nil {
+		if errors.Is(err, useCase.ErrContactNotFound) {
+			SetError(c, http.StatusNotFound, err)
+			return
+		}
+
 		SetError(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -291,6 +298,11 @@ func (d *Delivery) ReadContactByID(c *gin.Context) {
 
 	response, err := d.ucContact.ReadByID(ctx, converter.StringToUUID(id.Value))
 	if err != nil {
+		if errors.Is(err, useCase.ErrContactNotFound) {
+			SetError(c, http.StatusNotFound, err)
+			return
+		}
+
 		SetError(c, http.StatusInternalServerError, err)
 		return
 	}
