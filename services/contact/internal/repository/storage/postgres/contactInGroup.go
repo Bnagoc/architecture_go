@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -9,13 +8,15 @@ import (
 	"github.com/jackc/pgx/v4"
 
 	"architecture_go/pkg/tools/transaction"
+	"architecture_go/pkg/type/context"
 	"architecture_go/services/contact/internal/domain/contact"
 	"architecture_go/services/contact/internal/repository/storage/postgres/dao"
 )
 
-func (r *Repository) CreateContactIntoGroup(groupID uuid.UUID, contacts ...*contact.Contact) ([]*contact.Contact, error) {
+func (r *Repository) CreateContactIntoGroup(c context.Context, groupID uuid.UUID, contacts ...*contact.Contact) ([]*contact.Contact, error) {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -41,9 +42,10 @@ func (r *Repository) CreateContactIntoGroup(groupID uuid.UUID, contacts ...*cont
 	return response, nil
 }
 
-func (r *Repository) DeleteContactFromGroup(groupID, contactID uuid.UUID) error {
+func (r *Repository) DeleteContactFromGroup(c context.Context, groupID, contactID uuid.UUID) error {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -73,9 +75,10 @@ func (r *Repository) DeleteContactFromGroup(groupID, contactID uuid.UUID) error 
 	return nil
 }
 
-func (r *Repository) AddContactsToGroup(groupID uuid.UUID, contactIDs ...uuid.UUID) error {
+func (r *Repository) AddContactsToGroup(c context.Context, groupID uuid.UUID, contactIDs ...uuid.UUID) error {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {

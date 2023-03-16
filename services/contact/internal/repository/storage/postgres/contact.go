@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"errors"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 
 	"architecture_go/pkg/tools/transaction"
 	"architecture_go/pkg/type/columnCode"
+	"architecture_go/pkg/type/context"
 	"architecture_go/pkg/type/queryParameter"
 	"architecture_go/services/contact/internal/domain/contact"
 	"architecture_go/services/contact/internal/repository/storage/postgres/dao"
@@ -29,9 +29,10 @@ var mappingSortContact = map[columnCode.ColumnCode]string{
 	"age":         "age",
 }
 
-func (r *Repository) CreateContact(contacts ...*contact.Contact) ([]*contact.Contact, error) {
+func (r *Repository) CreateContact(c context.Context, contacts ...*contact.Contact) ([]*contact.Contact, error) {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -67,9 +68,10 @@ func (r *Repository) createContactTx(ctx context.Context, tx pgx.Tx, contacts ..
 	return contacts, nil
 }
 
-func (r *Repository) UpdateContact(ID uuid.UUID, updateFn func(c *contact.Contact) (*contact.Contact, error)) (*contact.Contact, error) {
+func (r *Repository) UpdateContact(c context.Context, ID uuid.UUID, updateFn func(c *contact.Contact) (*contact.Contact, error)) (*contact.Contact, error) {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -140,9 +142,10 @@ func (r *Repository) updateContactTx(ctx context.Context, tx pgx.Tx, in *contact
 	return r.toDomainContact(daoContacts[0])
 }
 
-func (r *Repository) DeleteContact(ID uuid.UUID) error {
+func (r *Repository) DeleteContact(c context.Context, ID uuid.UUID) error {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -188,9 +191,10 @@ func (r *Repository) deleteContactTx(ctx context.Context, tx pgx.Tx, ID uuid.UUI
 	return nil
 }
 
-func (r *Repository) ListContact(parameter queryParameter.QueryParameter) ([]*contact.Contact, error) {
+func (r *Repository) ListContact(c context.Context, parameter queryParameter.QueryParameter) ([]*contact.Contact, error) {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -260,9 +264,10 @@ func (r *Repository) listContactTx(ctx context.Context, tx pgx.Tx, parameter que
 	return r.toDomainContacts(daoContacts)
 }
 
-func (r *Repository) ReadContactByID(ID uuid.UUID) (response *contact.Contact, err error) {
+func (r *Repository) ReadContactByID(c context.Context, ID uuid.UUID) (response *contact.Contact, err error) {
 
-	var ctx = context.Background()
+	ctx := c.CopyWithTimeout(r.options.Timeout)
+	defer ctx.Cancel()
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -319,7 +324,7 @@ func (r *Repository) oneContactTx(ctx context.Context, tx pgx.Tx, ID uuid.UUID) 
 	return r.toDomainContact(daoContact[0])
 }
 
-func (r *Repository) CountContact() (uint64, error) {
+func (r *Repository) CountContact(ctx context.Context) (uint64, error) {
 
 	var builder = r.genSQL.Select(
 		"COUNT(id)",
@@ -331,8 +336,6 @@ func (r *Repository) CountContact() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
-	var ctx = context.Background()
 
 	var row = r.db.QueryRow(ctx, query, args...)
 	var total uint64
